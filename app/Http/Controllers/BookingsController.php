@@ -59,11 +59,15 @@ class BookingsController extends Controller
             The Start times and end times are offset to create a new array that contains the start and end time between booked time slots.
         */
 
+        // These are the times that are outside of the offset range, can be handy to know the first and last time.
+        $firstStartTime = null;
+        $lastEndTime = null;
+
         $startTimes = $bookingTimes->pluck('start_time');
-        $startTimes->shift();
+        $firstStartTime = $startTimes->shift();
 
         $endTimes = $bookingTimes->pluck('end_time');
-        $endTimes->pop();
+        $lastEndTime = $endTimes->pop();
 
         $timeSlots = [];
 
@@ -73,7 +77,7 @@ class BookingsController extends Controller
         }
 
         dump(
-            $startTimes, $endTimes, $timeSlots
+            $startTimes, $endTimes, $timeSlots, $firstStartTime, $lastEndTime
         );
 
     }
