@@ -48,31 +48,44 @@ class BookingsController extends Controller
     private function checkTimeSlots(Booking $booking){
 
         /*
-            This utility function is a WIP, needs to check the amount of time between each booking slot.
+            First attempt, this is a little hacky but is on the correct lines.
+            The Start times and end times are offset to create a new array that contains the start and end time between booked time slots.
         */
 
         if(!$bookingTimes = $booking->bookingTimes)
           return; // TODO implement error handler here.
 
-        /*
-            First attempt, this is a little hacky but is on the correct lines.
-            The Start times and end times are offset to create a new array that contains the start and end time between booked time slots.
-        */
-
         $startTimes = $bookingTimes->pluck('start_time');
         $endTimes = $bookingTimes->pluck('end_time');
 
-        // These are the times that are outside of the offset range, can be handy to know the first and last time.
+        // These are the times that are outside of the offset range,
+        // can be handy to know the first and last time.
         $firstStartTime = $startTimes->shift();
         $lastEndTime = $endTimes->pop();
 
-        // * nasty, must be another way.
+        // *Not sure about this, it's a little abstract.
         foreach ($endTimes as $key => $endTime){
-            $timeSlots[] = [$endTime, $startTimes[$key]];
+            $timeSlots[] = ['startTime' => $endTime, 'endTime' => $startTimes[$key]];
+        }
+
+        // The times between the booked time slots.
+        foreach ($timeSlots as $timeSlot){
+
+            $startTime = Carbon::parse($timeSlot['startTime']);
+            $endTime = Carbon::parse($timeSlot['endTime']);
+            $timeBetweenSlot = $startTime->diffInMinutes($endTime);
+
+            if($timeBetweenSlot >= 5){
+                dump( "Booking can be made between: " . $startTime->toTimeString() . " and " . $endTime->toTimeString() );
+            }
         }
 
         dump(
-            $startTimes, $endTimes, $timeSlots, $firstStartTime, $lastEndTime
+            $startTimes,
+            $endTimes,
+            $timeSlots,
+            $firstStartTime,
+            $lastEndTime
         );
 
     }
