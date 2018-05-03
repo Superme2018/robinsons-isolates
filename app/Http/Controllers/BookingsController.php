@@ -10,6 +10,18 @@ use App\Booking;
 
 class BookingsController extends Controller
 {
+    private $startOfDay;
+    private $endOfDay;
+
+    /**
+     * Using the construct to set the start and oed of day for the time being.
+     * Holding the data in the .evn for convenience.
+    */
+    public function __construct()
+    {
+        $this->startOfDay = env("START_OF_DAY");
+        $this->endOfDay = env("END_OF_DAY");
+    }
 
     /**
      * TODO move to repository.
@@ -80,7 +92,12 @@ class BookingsController extends Controller
             }
         }
 
+        /**
+         * Dump on the data, just to see what it's doing.
+         */
         dump(
+            $this->startOfDay,
+            $this->endOfDay,
             $startTimes,
             $endTimes,
             $timeSlots,
