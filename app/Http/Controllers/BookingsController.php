@@ -2,14 +2,27 @@
 
 namespace App\Http\Controllers;
 
-use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 //Models
 use App\Booking;
 
+//Repositories
+//use App\Http\Repositories\BookingsRepository;
+
+//Utilities
+use App\Http\Utilities\BookingUtilities;
+
 class BookingsController extends Controller
 {
+
+    //Repositories
+    //protected $bookingsRepository;
+
+    //Utilities
+    protected $bookingUtilities;
+
     private $startOfDay;
     private $endOfDay;
 
@@ -21,10 +34,12 @@ class BookingsController extends Controller
     {
         $this->startOfDay = env("START_OF_DAY");
         $this->endOfDay = env("END_OF_DAY");
+
+        //$bookingsRepository = new BookingsRepository(); //Not needed at the moment, but will be used as this expands.
+        $this->bookingUtilities = new BookingUtilities();
     }
 
     /**
-     * TODO move to repository.
      * Check get available dates.
      *
      * @return \Illuminate\Http\Response
@@ -32,78 +47,22 @@ class BookingsController extends Controller
     public function getBookedDates(Request $request){
 
         if(!$request->get("targetMonth")) // The targetMonth is passed in from the front-end as "yyyy-mm" format.
-          return; // TODO implement error handler here.
+            return; // TODO implement error handler here.
 
         if(!$month = Carbon::parse($request->get("targetMonth"))->month OR !$year = Carbon::parse($request->get("targetMonth"))->year)
-          return; // TODO implement error handler here.
+            return; // TODO implement error handler here.
 
         if(!count($bookedDates = Booking::whereMonth('reservation_date', '=', $month)->whereYear('reservation_date', '=', $year)->get()))
-          return; // TODO implement error handler here.
+            return; // TODO implement error handler here.
 
         // Do a check on the available times to see if any are free.
         foreach ($bookedDates as $bookedDate){
-            if(!$this->checkTimeSlots($bookedDate)){
+            if(!$this->bookingUtilities->checkTimeSlots($bookedDate)){
                 //Remove the date from the collection
             }
         }
 
         //return $bookedDates->pluck("reservation_date"); // Pluck will strip the 'reservation_date' and creates an array of only dates.
-
-    }
-
-    /**
-     * TODO move to date utilities.
-     * Check get available dates.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    private function checkTimeSlots(Booking $booking){
-
-        /*
-            First attempt, this is a little hacky but is on the correct lines.
-            The Start times and end times are offset to create a new array that contains the start and end time between booked time slots.
-        */
-
-        if(!$bookingTimes = $booking->bookingTimes)
-          return; // TODO implement error handler here.
-
-        $startTimes = $bookingTimes->pluck('start_time');
-        $endTimes = $bookingTimes->pluck('end_time');
-
-        // These are the times that are outside of the offset range,
-        // can be handy to know the first and last time.
-        $firstStartTime = $startTimes->shift();
-        $lastEndTime = $endTimes->pop();
-
-        // *Not sure about this, it's a little abstract.
-        foreach ($endTimes as $key => $endTime){
-            $timeSlots[] = ['startTime' => $endTime, 'endTime' => $startTimes[$key]];
-        }
-
-        // The times between the booked time slots.
-        foreach ($timeSlots as $timeSlot){
-
-            $startTime = Carbon::parse($timeSlot['startTime']);
-            $endTime = Carbon::parse($timeSlot['endTime']);
-            $timeBetweenSlot = $startTime->diffInMinutes($endTime);
-
-            if($timeBetweenSlot >= 5){
-                dump( "Booking can be made between: " . $startTime->toTimeString() . " and " . $endTime->toTimeString() );
-            }
-        }
-
-        /**
-         * Dump on the data, just to see what it's doing.
-         */
-        dump(
-            $this->startOfDay,
-            $this->endOfDay,
-            $startTimes,
-            $endTimes,
-            $timeSlots,
-            $firstStartTime,
-            $lastEndTime
-        );
 
     }
 
