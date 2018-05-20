@@ -37,8 +37,8 @@ class BookingUtilities
         $startTimes = $bookingTimes->pluck('start_time');
         $endTimes = $bookingTimes->pluck('end_time');
 
-        // These are the times that are outside of the offset range,
-        // can be handy to know the first and last time.
+        // These times that are outside of the offset range,
+        // can also be handy to know the first and last time, so set them here for future use.
         $firstStartTime = $startTimes->shift();
         $lastEndTime = $endTimes->pop();
 

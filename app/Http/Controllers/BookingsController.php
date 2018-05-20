@@ -27,7 +27,7 @@ class BookingsController extends Controller
     private $endOfDay;
 
     /**
-     * Using the construct to set the start and oed of day for the time being.
+     * Using the construct to set the start and end of day for the time being.
      * Holding the data in the .evn for convenience.
     */
     public function __construct()
